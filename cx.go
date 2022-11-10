@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	cx "github.com/hduLib/hdu/chaoxing"
-	"github.com/hduLib/hdu/net"
+	"github.com/hduLib/hdu/client"
 	"sync"
 )
 
@@ -38,9 +38,10 @@ func GettingCxddl(account, passwd, Type string) ([]ddl, []error) {
 		course := course
 		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			c, err := course.Detail()
 			if err != nil {
-				if err, ok := err.(*net.ErrNotOk); ok {
+				if err, ok := err.(*client.ErrNotOk); ok {
 					errCollector <- fmt.Errorf("fail to get course detail:status code %d: %s", err.StatusCode, err.Body)
 					return
 				}
@@ -49,9 +50,10 @@ func GettingCxddl(account, passwd, Type string) ([]ddl, []error) {
 			}
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				workList, err := c.WorkList()
 				if err != nil {
-					if err, ok := err.(*net.ErrNotOk); ok {
+					if err, ok := err.(*client.ErrNotOk); ok {
 						errCollector <- fmt.Errorf("fail to get work list:status code %d: %s", err.StatusCode, err.Body)
 						return
 					}
@@ -65,10 +67,10 @@ func GettingCxddl(account, passwd, Type string) ([]ddl, []error) {
 						}
 					}
 				}
-				wg.Done()
 			}()
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				examList, err := c.ExamList()
 				if err != nil {
 					errCollector <- fmt.Errorf("fail to get exam list:%v", err)
@@ -81,9 +83,7 @@ func GettingCxddl(account, passwd, Type string) ([]ddl, []error) {
 						}
 					}
 				}
-				wg.Done()
 			}()
-			wg.Done()
 		}()
 	}
 	// collector
