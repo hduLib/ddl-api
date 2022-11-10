@@ -10,9 +10,9 @@ import (
 	"sync"
 )
 
-const threads = 32
+const threads = 64
 
-type ddl struct {
+type DDL struct {
 	Course string `json:"course"`
 	Title  string `json:"title"`
 	Time   int64  `json:"time"`
@@ -31,7 +31,7 @@ var port int
 var lock = new(sync.Mutex)
 var wg sync.WaitGroup
 
-func getAndAppend(ddls *[]ddl, errs *[]error, f func() ([]ddl, []error)) {
+func getAndAppend(ddls *[]DDL, errs *[]error, f func() ([]DDL, []error)) {
 	d, e := f()
 	lock.Lock()
 	defer func() {
@@ -43,20 +43,25 @@ func getAndAppend(ddls *[]ddl, errs *[]error, f func() ([]ddl, []error)) {
 }
 
 func handleRequest(c *gin.Context) {
-	var ddls []ddl
+	var ddls []DDL
 	var errs []error
-	wg.Add(2)
-	go getAndAppend(&ddls, &errs, func() ([]ddl, []error) {
-		return GettingCxddl(c.Query("cx_account"), c.Query("cx_passwd"), c.Query("cx_loginType"))
-	})
-	go getAndAppend(&ddls, &errs, func() ([]ddl, []error) {
-		return GettingZjoocDdl(c.Query("zjooc_account"), c.Query("zjooc_passwd"))
-	})
+	if c.Query("cx_account") != "" {
+		wg.Add(1)
+		go getAndAppend(&ddls, &errs, func() ([]DDL, []error) {
+			return GettingCxddl(c.Query("cx_account"), c.Query("cx_passwd"), c.Query("cx_loginType"))
+		})
+	}
+	if c.Query("zjooc_account") != "" {
+		wg.Add(1)
+		go getAndAppend(&ddls, &errs, func() ([]DDL, []error) {
+			return GettingZjoocDdl(c.Query("zjooc_account"), c.Query("zjooc_passwd"))
+		})
+	}
 	wg.Wait()
 	if errs != nil {
 		c.JSON(http.StatusBadRequest, &RespForm{
 			Code:   -1,
-			Data:   nil,
+			Data:   ddls,
 			Errors: errs2strs(errs),
 		})
 		return
