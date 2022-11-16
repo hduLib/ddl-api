@@ -77,7 +77,8 @@ func main() {
 	flag.IntVar(&port, "p", 8080, "port")
 	flag.Parse()
 	client.DefaultClient = rateClient.NewWaitingClient(threads)
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Recovery())
 	r.GET("/ddl/all", handleRequest)
 	r.Run(":" + strconv.Itoa(port))
 }
