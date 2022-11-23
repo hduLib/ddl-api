@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	github.com/hduLib/hdu v0.0.0-20221109082842-2f2a8910069d
+	github.com/hduLib/hdu v0.0.0-20221119061308-b3b0929e7f24
 )
 
 require (
