@@ -45,6 +45,8 @@ GET `/dll/all`
 
 ### 课表
 
+GET `/courses/today`
+
 > 仿写hdu-scriptable的课表api,提供无缝兼容,风格与ddl的风格不同
 
 #### query
