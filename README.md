@@ -26,12 +26,12 @@ GET `/dll/all`
 
 #### resp
 
-| key    | value         | description |
-|--------|---------------|-------------|
-| code   | 0/-1          | -1为寄        |
-| data   | Array<ddl>    |             |
-| msg    | string        | 错误或ok       |
-| errors | Array<string> | 错误列表        |
+| key    | value         | description            |
+|--------|---------------|------------------------|
+| code   | 1/0/-1        | -1为寄，1为有错误，但是依旧返回了部分数据 |
+| data   | Array<ddl>    |                        |
+| msg    | string        | 错误或ok                  |
+| errors | Array<string> | 错误列表                   |
 
 **ddl**
 

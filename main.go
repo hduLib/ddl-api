@@ -87,11 +87,19 @@ func handleDDLRequest(c *gin.Context) {
 	}
 	wg.Wait()
 	if errs != nil {
-		c.JSON(http.StatusBadRequest, &RespForm{
-			Code:   -1,
-			Data:   ddls,
-			Errors: errs2strs(errs),
-		})
+		if len(ddls) == 0 {
+			c.JSON(http.StatusBadRequest, &RespForm{
+				Code:   -1,
+				Data:   ddls,
+				Errors: errs2strs(errs),
+			})
+		} else {
+			c.JSON(http.StatusBadRequest, &RespForm{
+				Code:   1,
+				Data:   ddls,
+				Errors: errs2strs(errs),
+			})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, &RespForm{
