@@ -44,22 +44,6 @@ func GettingCxddl(account, passwd, Type string) ([]DDL, []error) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				workList, err := c.WorkList()
-				if err != nil {
-					collect.ErrCollector <- fmt.Errorf("fail to get work list:%v", err)
-					return
-				}
-				for _, v := range workList.Works {
-					if v.Status == "未交" && v.Time.Unix() != 0 {
-						collect.Add <- DDL{
-							course.Title, v.Title, v.Time.Unix(), "作业", "超星",
-						}
-					}
-				}
-			}()
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
 				examList, err := c.ExamList()
 				if err != nil {
 					collect.ErrCollector <- fmt.Errorf("fail to get exam list:%v", err)
@@ -74,6 +58,24 @@ func GettingCxddl(account, passwd, Type string) ([]DDL, []error) {
 				}
 			}()
 		}()
+	}
+	wkls, err := user.WorkList()
+	if err != nil {
+		ddl, err := collect.Done()
+		return ddl, []error{fmt.Errorf("fail to get work list:%v", err)}
+	}
+	for _, work := range wkls.Works {
+		if work.Status == "未提交" {
+			var title string
+			for _, v := range list.Courses {
+				if v.ClazzId == work.ClazzId {
+					title = v.Title
+				}
+			}
+			collect.Add <- DDL{
+				title, work.Title, work.Time.Unix(), "作业", "超星",
+			}
+		}
 	}
 	wg.Wait()
 	return collect.Done()
