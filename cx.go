@@ -6,6 +6,7 @@ import (
 	"fmt"
 	cx "github.com/hduLib/hdu/chaoxing"
 	"sync"
+	"time"
 )
 
 func GettingCxddl(account, passwd, Type string) ([]DDL, []error) {
@@ -64,8 +65,9 @@ func GettingCxddl(account, passwd, Type string) ([]DDL, []error) {
 		ddl, err := collect.Done()
 		return ddl, []error{fmt.Errorf("fail to get work list:%v", err)}
 	}
+	t := time.Now()
 	for _, work := range wkls.Works {
-		if work.Status == "未提交" {
+		if work.Time.After(t) && work.Status == "未提交" {
 			var title string
 			for _, v := range list.Courses {
 				if v.ClazzId == work.ClazzId {
